@@ -17,31 +17,38 @@ namespace GraphLib{
 using SubgraphMatching::DataGraph, SubgraphMatching::PatternGraph, SubgraphMatching::CandidateSpace;
 namespace CardinalityEstimation {
     class FaSTestCardinalityEstimation {
-        CandidateSpace *CS;
         DataGraph *data_;
         PatternGraph *query_;
         CardEstOption opt_;
         dict result;
-        CandidateTreeSampler *TS;
-        CandidateGraphSampler *GS;
+        //使用智能指针进行管理
+        //CandidateSpace *CS;
+        //CandidateTreeSampler *TS;
+        //CandidateGraphSampler *GS;
+        std::unique_ptr<CandidateSpace> CS;
+        std::unique_ptr<CandidateTreeSampler> TS;
+        std::unique_ptr<CandidateGraphSampler> GS;
     public:
         FaSTestCardinalityEstimation(DataGraph *data, CardEstOption opt) {
             data_ = data;
             opt_ = opt;
 
-            // CS、TS、GS 析构时并未释放
-            CS = new CandidateSpace(data, opt);
-            TS = new CandidateTreeSampler(data, opt);
-            GS = new CandidateGraphSampler(data, opt);
+            // 问题：动态分配了 CS、TS、GS 对象，但未保证其内部资源正确释放
+            //CS = new CandidateSpace(data, opt);
+            //TS = new CandidateTreeSampler(data, opt);
+            //GS = new CandidateGraphSampler(data, opt);
+            CS = std::make_unique<CandidateSpace>(data, opt);
+            TS = std::make_unique<CandidateTreeSampler>(data, opt);
+            GS = std::make_unique<CandidateGraphSampler>(data, opt);
             result.clear();
         };
 
         //增加：显式给出FaSTestCardinalityEstimation 类的析构函数
-        ~FaSTestCardinalityEstimation() {
-            delete CS;
-            delete TS;
-            delete GS;
-        }
+        //~FaSTestCardinalityEstimation() {
+        //    delete CS;
+        //    delete TS;
+        //    delete GS;
+        //}
         
         dict GetResult() {return result;}
         double EstimateEmbeddings(PatternGraph *query) {
@@ -52,7 +59,7 @@ namespace CardinalityEstimation {
             for (auto &[key, value] : CS->GetCSInfo()) {
                 result[key] = value;
             }
-            TS->Preprocess(query, CS);
+            TS->Preprocess(query, CS.get());
 
             auto ts_result = TS->Estimate();
 
@@ -62,7 +69,7 @@ namespace CardinalityEstimation {
             result["GraphSampleTime"] = 0.00;
             double est = ts_result.first;
             if (ts_result.second <= 10) {
-                GS->Preprocess(query, CS);
+                GS->Preprocess(query, CS.get());
                 est = GS->Estimate(ceil((double)(opt_.ub_initial * query_->GetNumVertices()) / sqrt(ts_result.second + 1)));
 
                 for (auto &[key, value] : GS->GetInfo()) {

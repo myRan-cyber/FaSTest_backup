@@ -35,7 +35,7 @@ namespace GraphLib {
 #else
         std::vector<std::vector<std::vector<int>>> incident_edges;
 #endif
-        std::vector<std::unordered_map<int, int>> edge_index_map;
+        //std::vector<std::unordered_map<int, int>> edge_index_map;
         // 修改：为 unordered_map 预分配空间
 
 
@@ -142,6 +142,15 @@ namespace GraphLib {
         const int max_degree = GetMaxDegree();
         const int num_vertices = GetNumVertices();
     
+        // Ensure core_num and adj_list are correctly sized
+        if (core_num.size() != num_vertices) {
+            core_num.resize(num_vertices, 0);  // Ensure core_num has space for all vertices
+        }
+    
+        if (adj_list.size() != num_vertices) {
+            adj_list.resize(num_vertices);  // Ensure adj_list has space for all vertices
+        }
+    
         // 使用 unique_ptr 管理动态数组
         auto bin = std::make_unique<int[]>(max_degree + 1);
         auto pos = std::make_unique<int[]>(num_vertices);
@@ -155,7 +164,14 @@ namespace GraphLib {
         // 使用原生指针初始化（兼容原有逻辑）
         std::fill(bin_ptr, bin_ptr + (max_degree + 1), 0);
     
+        // Ensure core_num[v] is valid and adj_list[v] is properly initialized
         for (int v = 0; v < num_vertices; v++) {
+            if (v >= core_num.size()) {
+                core_num.push_back(0);  // Ensure the core_num array has space
+            }
+            if (v >= adj_list.size()) {
+                adj_list.push_back({});  // Ensure the adj_list array has space
+            }
             core_num[v] = adj_list[v].size();
             bin_ptr[core_num[v]] += 1;
         }
@@ -211,8 +227,9 @@ namespace GraphLib {
             degeneracy = std::max(core_num[i], degeneracy);
         }
     
-        // 无需手动 delete[]，unique_ptr 自动释放内存
+        // No need to manually delete[] as unique_ptr automatically frees memory
     }
+    
     /**
      * @brief Greedy coloring of the graph, following the given initial order of vertices.
      * @date Sep 16, 2022

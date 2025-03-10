@@ -4,6 +4,7 @@
 namespace GraphLib::SubgraphMatching {
     bool CandidateSpace::BuildInitialCS() {
         std::memset(num_visit_cs_, 0, data_->GetNumVertices() * sizeof(int));
+        //std::fill(num_visit_cs_.begin(), num_visit_cs_.end(), 0);
         std::vector<int> initial_cs_size(query_->GetNumVertices(), 0);
         std::vector<std::vector<int>> built_neighbors(query_->GetNumVertices());
         int root = 0;
@@ -133,6 +134,8 @@ namespace GraphLib::SubgraphMatching {
             if (opt.neighborhood_filter == NEIGHBOR_SAFETY) {
                 std::fill(neighbor_label_frequency.begin(), neighbor_label_frequency.end(), 0);
                 memset(in_neighbor_cs, false, data_->GetNumVertices());
+                //std::fill(in_neighbor_cs.begin(), in_neighbor_cs.end(), false);
+
                 PrepareNeighborSafety(cur);
             }
             for (int i = 0; i < candidate_set_[cur].size(); i++) {

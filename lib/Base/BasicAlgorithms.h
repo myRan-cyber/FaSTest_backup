@@ -149,31 +149,165 @@ struct BipartiteMaximumMatching {
 
 
     ~BipartiteMaximumMatching() {
-        delete[] left;
-        delete[] right;
-        delete[] used;
-        for (int i = 0; i < left_len; i++) {
-            delete[] adj[i];
-            delete[] matchable[i];
-            delete[] upper_graph[i];
+        /*
+        // 确保仅释放没有被释放的内存
+        if (data) {
+        delete[] data;
+        data = nullptr;
         }
-        delete[] matchable;
-        delete[] adj;
-        delete[] adj_size;
-        delete[] lower_graph;
-        delete[] upper_graph;
-        delete[] lower_graph_size;
-        delete[] upper_graph_size;
-        delete[] right_order;
-        delete[] inverse_right_order;
-        delete[] bfs_visited;
+        */
 
-        //增加：保证每个动态分配的内存都能被释放
-        delete[] dfsn;
-        delete[] scch;
-        delete[] scc_idx;
-        delete[] Q;
-        delete[] S;
+        //按照上述方式避免重复释放
+
+        if (left) {
+            delete[] left;
+            left = nullptr;
+        }
+        //delete[] left;
+
+        if (right) {
+            delete[] right;
+            right = nullptr;
+        }
+
+        //delete[] right;
+
+        if (used) {
+            delete[] used;
+            used = nullptr;
+        }
+        //delete[] used;
+
+        //二级指针内部释放
+        for (int i = 0; i < left_len; i++) {
+            if (adj[i]) {
+                delete[] adj[i];
+                adj[i] = nullptr;
+            }
+            //delete[] adj[i];
+
+            if (matchable[i]) {
+                delete[] matchable[i];
+                matchable[i] = nullptr;
+            }
+            //delete[] matchable[i];
+
+            if (upper_graph[i]) {
+                delete[] upper_graph[i];
+                upper_graph[i] = nullptr;
+            }
+            //delete[] upper_graph[i];
+
+            //增加：adj_index[i] = new int[max_right]();lower_graph[i] = new int[max_left]();
+            if (adj_index[i]) {
+                delete[] adj_index[i];
+                adj_index[i] = nullptr;
+            }
+
+            if (lower_graph[i]) {
+                delete[] lower_graph[i];
+                lower_graph[i] = nullptr;
+            }
+
+        }
+        if (matchable) {
+            delete[] matchable;
+            matchable = nullptr;
+        }
+        //delete[] matchable; //214
+
+        if (adj) {
+            delete[] adj;
+            adj = nullptr;
+        }
+        //delete[] adj;
+
+        if (adj_size) {
+            delete[] adj_size;
+            adj_size = nullptr;
+        }
+        //delete[] adj_size;
+
+        if (lower_graph) {
+            delete[] lower_graph;
+            lower_graph = nullptr;
+        }
+        //delete[] lower_graph;
+
+        if (upper_graph) {
+            delete[] upper_graph;
+            upper_graph = nullptr;
+        }
+        //delete[] upper_graph;
+
+        if (lower_graph_size) {
+            delete[] lower_graph_size;
+            lower_graph_size = nullptr;
+        }
+        //delete[] lower_graph_size;
+
+        if (upper_graph_size) {
+            delete[] upper_graph_size;
+            upper_graph_size = nullptr;
+        }
+        //delete[] upper_graph_size;
+
+        if (right_order) {
+            delete[] right_order;
+            right_order = nullptr;
+        }
+        //delete[] right_order; //209
+
+        if (inverse_right_order) {
+            delete[] inverse_right_order;
+            inverse_right_order = nullptr;
+        }
+        //delete[] inverse_right_order;
+
+        if (bfs_visited) {
+            delete[] bfs_visited;
+            bfs_visited = nullptr;
+        }
+        //delete[] bfs_visited;
+
+        //增加：保证每个动态分配的内存都能被释放,
+        if (dfsn) {
+            delete[] dfsn;
+            dfsn = nullptr;
+        }
+        //delete[] dfsn;
+
+        if (scch) {
+            delete[] scch;
+            scch = nullptr;
+        }
+        //delete[] scch;
+
+        if (scc_idx) {
+            delete[] scc_idx;
+            scc_idx = nullptr;
+        }
+        //delete[] scc_idx;
+
+        if (Q) {
+            delete[] Q;
+            Q = nullptr;
+        }
+        //delete[] Q;
+
+        if (S) {
+            delete[] S;
+            S = nullptr;
+        }
+        //delete[] S;
+
+        //第201行：adj_index = new int *[max_left]; //未释放
+        //与adj = new int *[max_left];类似
+        if (adj_index) {
+            delete[] adj_index;
+            adj_index = nullptr;
+        }
+        //delete[] adj_index;
     }
 
     
@@ -194,7 +328,7 @@ struct BipartiteMaximumMatching {
         arr_len = max_query_vertex;
         used = new bool[max_left]();
         adj = new int *[max_left];
-        adj_index = new int *[max_left];
+        adj_index = new int *[max_left]; //未释放
 
         matchable = new bool *[max_left];
         lower_graph = new int *[max_right];

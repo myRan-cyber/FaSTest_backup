@@ -1,0 +1,3 @@
+/home/myran/FaSTest/build/CMakeFiles/Fastest.dir
+/home/myran/FaSTest/build/CMakeFiles/edit_cache.dir
+/home/myran/FaSTest/build/CMakeFiles/rebuild_cache.dir
