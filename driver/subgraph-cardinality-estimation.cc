@@ -96,7 +96,10 @@ int32_t main(int argc, char *argv[]) {
     pattern_graphs.resize(query_names.size());
     for (int i = 0; i < query_names.size(); i++) {
         std::string query_name = query_names[i];
+
+        //动态分配内存
         pattern_graphs[i] = new PatternGraph();
+
         pattern_graphs[i]->LoadLabeledGraph(query_name);
         pattern_graphs[i]->ProcessPattern(D);
         pattern_graphs[i]->EnumerateLocalTriangles();
@@ -141,6 +144,11 @@ int32_t main(int argc, char *argv[]) {
         results.push_back(query_result);
     }
 
+    // 释放动态分配的 PatternGraph 内存
+    for (int i = 0; i < pattern_graphs.size(); i++) {
+        delete pattern_graphs[i];  // 释放内存
+    }
+    
     std::function<double(double)> absolute_value = [](double x) {return std::abs(x);};
     cout << std::fixed << std::setprecision(2) << "Total Time: " << Total(results, "QueryTime") << "ms\n";
     cout << std::fixed << std::setprecision(2) <<
