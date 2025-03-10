@@ -1,3 +1,4 @@
+//------------------------------ CandidateSpace.h 内存检查 -------------------------
 #pragma once
 #include "SubgraphMatching/DataGraph.h"
 #include "SubgraphMatching/PatternGraph.h"
@@ -218,3 +219,6 @@ namespace SubgraphMatching {
     }
 
 } }
+
+//----------------------------- 目前尚未发现内存泄漏 ----------------------------------------------------------
+// 后续建议使用vector代替裸指针，自动完成指针管理
