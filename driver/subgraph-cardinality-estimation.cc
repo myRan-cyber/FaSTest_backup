@@ -144,11 +144,11 @@ int32_t main(int argc, char *argv[]) {
         results.push_back(query_result);
     }
 
-    // 释放动态分配的 PatternGraph 内存
+    //增加：释放动态分配的 PatternGraph 内存
     for (int i = 0; i < pattern_graphs.size(); i++) {
         delete pattern_graphs[i];  // 释放内存
     }
-    
+
     std::function<double(double)> absolute_value = [](double x) {return std::abs(x);};
     cout << std::fixed << std::setprecision(2) << "Total Time: " << Total(results, "QueryTime") << "ms\n";
     cout << std::fixed << std::setprecision(2) <<
