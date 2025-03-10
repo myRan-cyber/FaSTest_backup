@@ -3,6 +3,7 @@
 #include <map>
 #include <iostream>
 #include <fstream>
+#include <memory> // 添加智能指针支持
 #include "Base/Base.h"
 // #define HUGE_GRAPH
 namespace GraphLib {
@@ -26,12 +27,16 @@ namespace GraphLib {
         std::vector<int> vertex_label, edge_label, edge_to;
         std::vector<std::pair<int, int>> edge_list;
         std::vector<std::vector<int>> all_incident_edges;
+
+        // 修改: 为 unordered_map 预分配空间
+        std::vector<std::unordered_map<int, int>> edge_index_map;
 #ifdef HUGE_GRAPH
         std::vector<std::map<int, std::vector<int>>> incident_edges;
 #else
         std::vector<std::vector<std::vector<int>>> incident_edges;
 #endif
         std::vector<std::unordered_map<int, int>> edge_index_map;
+        // 修改：为 unordered_map 预分配空间
 
 
         /*
@@ -47,7 +52,14 @@ namespace GraphLib {
         std::vector<std::vector<FourMotif>> local_four_cycles;
     public:
         Graph() {}
-        ~Graph() {}
+
+        // 显式释放内存
+        ~Graph() {
+            adj_list.clear();
+            all_incident_edges.clear();
+            incident_edges.clear();
+            edge_index_map.clear();
+        }
         Graph &operator=(const Graph &) = delete;
 
         std::vector<int>& GetNeighbors(int v) {
@@ -124,76 +136,83 @@ namespace GraphLib {
      * @brief Compute the core number of each vertex
      * @date Oct 21, 2022
      */
+
+    //// ================= 修改: ComputeCoreNum 异常安全 =================
     void Graph::ComputeCoreNum() {
-        core_num.resize(num_vertex, 0);
-        int *bin = new int[GetMaxDegree() + 1];
-        int *pos = new int[GetNumVertices()];
-        int *vert = new int[GetNumVertices()];
-
-        std::fill(bin, bin + (GetMaxDegree() + 1), 0);
-
-        for (int v = 0; v < GetNumVertices(); v++) {
+        const int max_degree = GetMaxDegree();
+        const int num_vertices = GetNumVertices();
+    
+        // 使用 unique_ptr 管理动态数组
+        auto bin = std::make_unique<int[]>(max_degree + 1);
+        auto pos = std::make_unique<int[]>(num_vertices);
+        auto vert = std::make_unique<int[]>(num_vertices);
+    
+        // 获取底层原生指针
+        int* bin_ptr = bin.get();
+        int* pos_ptr = pos.get();
+        int* vert_ptr = vert.get();
+    
+        // 使用原生指针初始化（兼容原有逻辑）
+        std::fill(bin_ptr, bin_ptr + (max_degree + 1), 0);
+    
+        for (int v = 0; v < num_vertices; v++) {
             core_num[v] = adj_list[v].size();
-            bin[core_num[v]] += 1;
+            bin_ptr[core_num[v]] += 1;
         }
-
+    
         int start = 0;
-        int num;
-
-        for (int d = 0; d <= GetMaxDegree(); d++) {
-            num = bin[d];
-            bin[d] = start;
+        for (int d = 0; d <= max_degree; d++) {
+            int num = bin_ptr[d];
+            bin_ptr[d] = start;
             start += num;
         }
-
-        for (int v = 0; v < GetNumVertices(); v++) {
-            pos[v] = bin[core_num[v]];
-            vert[pos[v]] = v;
-            bin[core_num[v]] += 1;
+    
+        for (int v = 0; v < num_vertices; v++) {
+            pos_ptr[v] = bin_ptr[core_num[v]];
+            vert_ptr[pos_ptr[v]] = v;
+            bin_ptr[core_num[v]] += 1;
         }
-
-        for (int d = GetMaxDegree(); d--;)
-            bin[d + 1] = bin[d];
-        bin[0] = 0;
-
-        for (int i = 0; i < GetNumVertices(); i++) {
-            int v = vert[i];
-
-            for (int u : GetNeighbors(v)) {
+    
+        for (int d = max_degree; d > 0; d--) {
+            bin_ptr[d] = bin_ptr[d - 1];
+        }
+        bin_ptr[0] = 0;
+    
+        for (int i = 0; i < num_vertices; i++) {
+            int v = vert_ptr[i];
+            for (int u : adj_list[v]) {
                 if (core_num[u] > core_num[v]) {
                     int du = core_num[u];
-                    int pu = pos[u];
-                    int pw = bin[du];
-                    int w = vert[pw];
-
+                    int pu = pos_ptr[u];
+                    int pw = bin_ptr[du];
+                    int w = vert_ptr[pw];
+    
                     if (u != w) {
-                        pos[u] = pw;
-                        pos[w] = pu;
-                        vert[pu] = w;
-                        vert[pw] = u;
+                        pos_ptr[u] = pw;
+                        pos_ptr[w] = pu;
+                        vert_ptr[pu] = w;
+                        vert_ptr[pw] = u;
                     }
-
-                    bin[du]++;
+    
+                    bin_ptr[du]++;
                     core_num[u]--;
                 }
             }
         }
-        degeneracy_order.resize(GetNumVertices());
-        for (int i = 0; i < GetNumVertices(); i++) {
-            degeneracy_order[i] = vert[i];
+    
+        degeneracy_order.resize(num_vertices);
+        for (int i = 0; i < num_vertices; i++) {
+            degeneracy_order[i] = vert_ptr[i];
         }
-        std::reverse(degeneracy_order.begin(),degeneracy_order.end());
-
+        std::reverse(degeneracy_order.begin(), degeneracy_order.end());
+    
         degeneracy = 0;
-        for (int i = 0; i < GetNumVertices(); i++) {
+        for (int i = 0; i < num_vertices; i++) {
             degeneracy = std::max(core_num[i], degeneracy);
         }
-
-        delete[] bin;
-        delete[] pos;
-        delete[] vert;
+    
+        // 无需手动 delete[]，unique_ptr 自动释放内存
     }
-
     /**
      * @brief Greedy coloring of the graph, following the given initial order of vertices.
      * @date Sep 16, 2022
@@ -296,15 +315,26 @@ namespace GraphLib {
         all_incident_edges.resize(num_vertex);
         incident_edges.resize(num_vertex);
         edge_index_map.resize(num_vertex);
+
+        //修改一：预分配 edge_index_map 的哈希表空间
+        for (auto& map : edge_index_map) {
+            map.reserve(GetNumLabels()); // 根据标签数量预分配
+        }
+
+
         for (int i = 0; i < GetNumVertices(); i++) {
 #ifndef HUGE_GRAPH
+            //修改二：确保第二维度正确初始化
             incident_edges[i].resize(GetNumLabels());
+            for (auto& vec : incident_edges[i]) {
+                vec.reserve(adj_list[i].size() / GetNumLabels()); // 预分配合理空间
+            }
 #endif
         }
         int edge_id = 0;
         for (auto& [u, v] : edge_list) {
             all_incident_edges[u].push_back(edge_id);
-            incident_edges[u][GetVertexLabel(v)].push_back(edge_id);
+            incident_edges[u][GetVertexLabel(v)].push_back(edge_id); // 存在内存泄漏问题
             edge_index_map[u][v] = edge_id;
             edge_id++;
         }
