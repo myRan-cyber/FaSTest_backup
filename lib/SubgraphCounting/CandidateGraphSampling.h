@@ -1,3 +1,4 @@
+//------------------------ CandidateGraphSampling.h 内存检查 ------------------------------
 #pragma once
 
 namespace GraphLib {
@@ -242,3 +243,5 @@ namespace GraphLib {
 
     }
 }
+
+//---------------------- 仅构造函数CandidateGraphSampler()使用了new 目前未发现问题 ------------------------------
