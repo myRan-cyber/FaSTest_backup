@@ -1,3 +1,4 @@
+//-------------------------------- CandidateTreeSampling.h 内存检查 ------------------------
 #pragma once
 #include <boost/math/distributions.hpp>
 #include "SubgraphMatching/CandidateSpace.h"
@@ -331,3 +332,5 @@ namespace GraphLib {
         };
     }
 }
+
+//------------------------------ 无明显指针泄漏问题 --------------------------------------------------
