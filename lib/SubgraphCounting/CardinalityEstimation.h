@@ -1,3 +1,4 @@
+//----------------------------- CardinalityEstimation.h 内存检查 ----------------------------
 #pragma once
 
 #include "SubgraphCounting/Option.h"
@@ -28,11 +29,20 @@ namespace CardinalityEstimation {
             data_ = data;
             opt_ = opt;
 
+            // CS、TS、GS 析构时并未释放
             CS = new CandidateSpace(data, opt);
             TS = new CandidateTreeSampler(data, opt);
             GS = new CandidateGraphSampler(data, opt);
             result.clear();
         };
+
+        //增加：显式给出FaSTestCardinalityEstimation 类的析构函数
+        ~FaSTestCardinalityEstimation() {
+            delete CS;
+            delete TS;
+            delete GS;
+        }
+        
         dict GetResult() {return result;}
         double EstimateEmbeddings(PatternGraph *query) {
             result.clear();
@@ -69,3 +79,5 @@ namespace CardinalityEstimation {
     };
 }
 }
+
+//---------------------------- 增加析构函数 ---------------------------------
