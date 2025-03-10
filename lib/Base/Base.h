@@ -1,3 +1,4 @@
+//-------------------- 检查Base.h是否存在内存泄漏 ------------------
 #pragma once
 #include <queue>
 #include <cassert>
@@ -94,3 +95,4 @@ void EraseIndex(std::vector<T> &vec, int& idx) {
     --idx;
 }
 
+//-------------------- 检查完毕 ------------------
