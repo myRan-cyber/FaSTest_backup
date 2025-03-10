@@ -1,3 +1,4 @@
+//----------------------- Timer.h 内存检查 ---------------------
 #ifndef GLOBAL_TIMER_H_
 #define GLOBAL_TIMER_H_
 

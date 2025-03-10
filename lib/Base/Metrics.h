@@ -1,3 +1,4 @@
+//-------------------- Metrics.h 内存检查 ------------------
 #pragma once
 #include <cmath>
 #include <algorithm>
@@ -33,3 +34,5 @@ double Std(const std::vector<dict>& results, const std::string& which) {
     double sqtotal = Total(results, which, square);
     return sqrt((sqtotal - total * total) / results.size());
 }
+
+//------------------------ 不存在内存泄漏问题，但可进行性能优化 -------------------------------------
