@@ -1,3 +1,4 @@
+//--------------------------------- CandidateFilter.h 内存检查--------------------------
 #include "SubgraphMatching/CandidateSpace.h"
 
 namespace GraphLib::SubgraphMatching {
