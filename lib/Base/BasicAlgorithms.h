@@ -1,3 +1,4 @@
+//-------------------------- BasicAlgorithms.h 检查内存泄漏问题 --------------------------------
 #pragma once
 #include "Base.h"
 
@@ -166,8 +167,17 @@ struct BipartiteMaximumMatching {
         delete[] right_order;
         delete[] inverse_right_order;
         delete[] bfs_visited;
+
+        //增加：保证每个动态分配的内存都能被释放
+        delete[] dfsn;
+        delete[] scch;
+        delete[] scc_idx;
+        delete[] Q;
+        delete[] S;
     }
 
+    
+    //advice: 这里的内存开辟可以使用std::vector进行管理
     void Initialize(int max_left, int max_right, int max_query_vertex) {
         Q = new int[max_right]();
         S = new int[max_right]();
@@ -206,7 +216,8 @@ struct BipartiteMaximumMatching {
         adj_size = new int[max_left]();
         bfs_visited = new bool[max_right]();
     }
-
+    
+      
     void Reset(bool reset_edges = true) {
         std::memset(left, -1, sizeof(int) * left_len);
         std::memset(right, -1, sizeof(int) * right_len);
@@ -350,3 +361,5 @@ void VectorIntersection(
         a_idx++;
     }
 }
+
+//----------------------- 检查完毕------------------------
