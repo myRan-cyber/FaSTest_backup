@@ -1,3 +1,4 @@
+//--------------------- SmallCyccle.h 内存检查 ------------------------
 #include "DataStructure/Graph.h"
 
 namespace GraphLib {
@@ -163,3 +164,5 @@ namespace GraphLib {
 
     }
 }
+
+//----------------------- 暂无内存泄漏风险 ------------------------------
